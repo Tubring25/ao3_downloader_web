@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "./components/layout/header";
 import Providers from "./providers";
+import { cn } from "./lib/utils";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,7 +28,12 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} bg-[url('/images/home_bg.jpeg')] bg-cover bg-center bg-no-repeat bg-fixed`}
+        className={cn(
+          geistSans.variable,
+          geistMono.variable,
+          "bg-[url('/images/home_bg.jpeg')] bg-cover bg-center bg-fixed min-h-screen text-foreground antialiased",
+        )}
+        suppressHydrationWarning
       >
         <Providers>
           <div className="flex flex-col min-h-screen">
