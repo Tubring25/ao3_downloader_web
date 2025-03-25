@@ -1,5 +1,5 @@
 import { Rating } from "@/app/types/story";
-import { cn } from "@/app/lib/utils";
+import { cn } from "@/lib/utils";
 
 export default function RatingIcon({ rating, isLight=true }: { rating: Rating, isLight?: boolean }) {
 

@@ -7,7 +7,7 @@ import { isMobileNavbarOpenAtom } from '@/app/state/modalState';
 import MobileNavbarModal from "./MobileNavbarModal";
 import { Button } from "../ui/button";
 import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink } from "../ui/navigation-menu";
-import { cn } from "@/app/lib/utils";
+import { cn } from "@/lib/utils";
 
 export default function Header() {
   const [, setIsMobileNavbarOpen] = useAtom(isMobileNavbarOpenAtom);

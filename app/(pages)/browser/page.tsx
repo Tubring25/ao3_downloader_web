@@ -3,14 +3,15 @@ import React, { useState } from 'react';
 import { useQuery } from "@tanstack/react-query";
 import { Search, Info } from 'lucide-react';
 import { queryWorks } from '@/app/api/search/search'
-import StoryCard from '@/app/components/storycard/StoryCard';
+import StoryCard from '@/components/storycard/StoryCard';
 import { Story } from '@/app/types/story';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Button } from '@/app/components/ui/button';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/app/components/ui/tooltip';
-import InstructionsDialog from '@/app/components/storycard/InstructionsDialog';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import InstructionsDialog from '@/components/storycard/InstructionsDialog';
+import { Suspense } from 'react'
 
-export default function BrowserPage() {
+function BrowserContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const initialKeyword = searchParams.get('keyword') || '';
@@ -125,5 +126,13 @@ export default function BrowserPage() {
         ) : null}
       </div>
     </div>
+  );
+}
+
+export default function Browser() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <BrowserContent />
+    </Suspense>
   );
 }

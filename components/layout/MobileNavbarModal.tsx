@@ -4,8 +4,8 @@ import { X } from 'lucide-react';
 import Link from "next/link";
 import { useAtom } from 'jotai';
 import { isMobileNavbarOpenAtom } from '@/app/state/modalState';
-import { Dialog } from "@/app/components/ui/dialog";
-import { Button } from "@/app/components/ui/button";
+import { Dialog } from "@/components//ui/dialog";
+import { Button } from "@/components//ui/button";
 import { motion } from "framer-motion";
 
 export default function MobileNavbarModal() {
