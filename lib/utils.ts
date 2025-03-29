@@ -7,7 +7,7 @@ export function cn(...inputs: ClassValue[]) {
 } 
 
 export interface Env {
-  D1: D1Database
+  DB: D1Database
 }
 
 export interface PagedResult<T> {

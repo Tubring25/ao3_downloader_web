@@ -23,6 +23,7 @@
 # misc
 .DS_Store
 *.pem
+Thumbs.db
 
 # debug
 npm-debug.log*
@@ -43,6 +44,31 @@ next-env.d.ts
 # cursor
 .cursorrules
 
-# wrangler
-wrangler.toml
-drizzle.config.ts
+# cloudflare
+.dev.vars
+.wrangler/
+
+# local db
+*.db
+*.sqlite
+*.sqlite3
+migrations
+
+# local env
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# logs
+logs
+*.log

@@ -1,7 +1,13 @@
-import { drizzle } from 'drizzle-orm/d1'
+import { drizzle as drizzle_d1 } from 'drizzle-orm/d1'
+import { drizzle as drizzle_sqlite } from 'drizzle-orm/better-sqlite3';
 import { Env } from '../utils'
-import * as schema from './schema'
+import Database from 'better-sqlite3';
 
 export const getDb = (env: Env) => {
-  return drizzle(env.D1, { schema })
+  if(typeof env?.DB !== 'undefined') {
+    return drizzle_d1(env.DB)
+  }
+
+  const sqlite = new Database('./local.db');
+  return drizzle_sqlite(sqlite)
 }

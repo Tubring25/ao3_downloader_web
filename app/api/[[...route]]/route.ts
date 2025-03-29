@@ -4,13 +4,20 @@ import { cors } from 'hono/cors'
 import { getDb } from '@/lib/db'
 import { works } from '@/lib/db/schema'
 import { count, eq, like } from 'drizzle-orm'
-import { Env, getPaginatedData } from '@/lib/utils'
+import { getPaginatedData } from '@/lib/utils'
+
+// export const runtime = 'edge';
 
 // create a new Hono instance
-const app = new Hono<{Bindings: Env}>()
+const app = new Hono().basePath('/api/works')
+app.notFound((c) => c.json({ message: 'Not Found', ok: false }, 404))
 
 // config the proxy
-app.use('*', cors());
+app.use('*', cors({
+  origin: '*',
+  allowMethods: ['GET', 'POST', 'PUT', 'DELETE'],
+  // headers: ['Content-Type', 'Authorization'],
+}));
 
 // get all works with pagination
 app.get('/', async (c) => {
@@ -25,13 +32,13 @@ app.get('/', async (c) => {
   const baseCountQuery = db.select({ value: count() }).from(works);
 
   const searchTerm = search ? `%${search}%` : undefined;
-  const finalQuery = searchTerm 
-    ? baseQuery.where(like(works.title, searchTerm)).limit(pageSize).offset(offset)
-    : baseQuery.limit(pageSize).offset(offset);
+    const finalQuery = searchTerm 
+      ? baseQuery.where(like(works.title, searchTerm)).limit(pageSize).offset(offset)
+      : baseQuery.limit(pageSize).offset(offset);
 
-  const finalCountQuery = searchTerm
-    ? baseCountQuery.where(like(works.title, searchTerm))
-    : baseCountQuery;
+    const finalCountQuery = searchTerm
+      ? baseCountQuery.where(like(works.title, searchTerm))
+      : baseCountQuery;
 
   // fetch data
   const result = await getPaginatedData(
@@ -59,6 +66,10 @@ app.get('/:id', async (c) => {
   }
 
   return c.json(work)
+})
+
+app.get('/test', async (c) => {
+  return c.json({ message: 'Hello World!' })
 })
 
 export const GET = handle(app)
