@@ -2,14 +2,14 @@ import { Hono } from 'hono'
 import { handle } from 'hono/vercel'
 import { cors } from 'hono/cors'
 import { getDb } from '@/lib/db'
-import { works } from '@/lib/db/schema'
-import { count, eq, like } from 'drizzle-orm'
-import { getPaginatedData } from '@/lib/utils'
+import { zValidator } from '@hono/zod-validator';
+import { z } from 'zod';
+import { getWorkById, getWorksList } from '../works/service';
 
 // export const runtime = 'edge';
 
 // create a new Hono instance
-const app = new Hono().basePath('/api/works')
+export const app = new Hono().basePath('/api/works')
 app.notFound((c) => c.json({ message: 'Not Found', ok: false }, 404))
 
 // config the proxy
@@ -19,57 +19,69 @@ app.use('*', cors({
   // headers: ['Content-Type', 'Authorization'],
 }));
 
+export const searchSchema = z.object({
+  title: z.string().optional(),
+  author: z.string().optional(),
+  isSingleCharacter: z.boolean().optional(),
+  rating: z.string().optional(),
+  keyword: z.string().optional(),
+  // sort:
+  sortBy: z.enum(['kudos', 'comments', 'words']).default('kudos'),
+  sortOrder: z.enum(['asc', 'desc']).default('desc'),
+  // pagination
+  page: z.string().default('1'),
+  pageSize: z.string().default('10'),
+})
+
 // get all works with pagination
-app.get('/', async (c) => {
-  const db = getDb(c.env)
-  const page = parseInt(c.req.query('page') || '1')
-  const pageSize = parseInt(c.req.query('pageSize') || '10')
-  const search = c.req.query('search') || ''
+app.get('/', zValidator('query', searchSchema), async (c) => {
+  try {
+    const queryParams = c.req.valid('query')
+    const worksListResult = await getWorksList(c.env, queryParams)
 
-  const offset = (page - 1) * pageSize
-
-  const baseQuery = db.select().from(works);
-  const baseCountQuery = db.select({ value: count() }).from(works);
-
-  const searchTerm = search ? `%${search}%` : undefined;
-    const finalQuery = searchTerm 
-      ? baseQuery.where(like(works.title, searchTerm)).limit(pageSize).offset(offset)
-      : baseQuery.limit(pageSize).offset(offset);
-
-    const finalCountQuery = searchTerm
-      ? baseCountQuery.where(like(works.title, searchTerm))
-      : baseCountQuery;
-
-  // fetch data
-  const result = await getPaginatedData(
-    () => finalQuery,
-    async () => {
-      const result = await finalCountQuery;
-      return result[0]?.value || 0
-    },
-    page,
-    pageSize
-  )
-
-  return c.json(result)
+    return c.json({
+      ok: true,
+      message: worksListResult.pagination.total > 0 ? 'success' : 'No works found',
+      data: worksListResult,
+    })
+  } catch (error) {
+    console.error('Error fetching works list:', error)
+    return c.json({
+      ok: false,
+      message: error instanceof Error ? error.message : 'Failed to fetch works list',
+      data: null,
+    }, 500)
+  }
 })
 
 // get single work detail
 app.get('/:id', async (c) => {
-  const id = parseInt(c.req.param('id'))
-  const db = getDb(c.env)
-
-  const work = await db.select().from(works).where(eq(works.id, id)).get()
-
-  if(!work) {
-    return c.json({ error: 'Work not found' }, 404)
+  try {
+    const id = parseInt(c.req.param('id'))
+    
+    if (isNaN(id)) {
+      return c.json({
+        ok: false,
+        message: 'Invalid work ID',
+        data: null
+      }, 400)
+    }
+    
+    const work = await getWorkById(c.env, id)
+    
+    return c.json({
+      ok: true,
+      message: work ? 'success' : 'Work not found',
+      data: work
+    })
+  } catch (error) {
+    console.error('Error fetching work:', error)
+    return c.json({
+      ok: false,
+      message: error instanceof Error ? error.message : 'Failed to fetch work',
+      data: null
+    }, 500)
   }
-
-  return c.json(work)
-})
-
-app.get('/test', async (c) => {
-  return c.json({ message: 'Hello World!' })
 })
 
 export const GET = handle(app)

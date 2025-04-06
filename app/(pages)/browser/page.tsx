@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useQuery } from "@tanstack/react-query";
 import { Search, Info } from 'lucide-react';
-import { queryWorks } from '@/app/api/search/search'
+import { queryWorks } from '@/app/api/search/index'
 import StoryCard from '@/components/storycard/StoryCard';
 import { Story } from '@/app/types/story';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -25,7 +25,7 @@ function BrowserContent() {
     queryFn: async () => {
       if (!currentKeyword.trim()) return [];
       try {
-        const result = await queryWorks(currentKeyword);
+        const result = await queryWorks(1, 10, currentKeyword);
         console.log('Query result:', result);
         return result.lists || [];
       } catch (err) {

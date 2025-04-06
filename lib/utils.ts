@@ -17,20 +17,3 @@ export interface PagedResult<T> {
   pageSize: number,
   totalPages: number
 }
-
-export async function getPaginatedData<T>(
-  fetcher: () => Promise<T[]>,
-  countFetcher: () => Promise<number>,
-  page = 1,
-  pageSize = 10
-): Promise<PagedResult<T>> {
-  const [data, total] = await Promise.all([fetcher(), countFetcher()]);
-  
-  return {
-    data,
-    total,
-    page,
-    pageSize,
-    totalPages: Math.ceil(total / pageSize)
-  };
-}
