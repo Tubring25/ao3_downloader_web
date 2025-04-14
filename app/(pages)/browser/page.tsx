@@ -27,7 +27,7 @@ function BrowserContent() {
       try {
         const result = await queryWorks(1, 10, currentKeyword);
         console.log('Query result:', result);
-        return result.lists || [];
+        return result.data.works || [];
       } catch (err) {
         console.error('Error in query function:', err);
         throw err;

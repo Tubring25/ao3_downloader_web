@@ -1,4 +1,5 @@
 import { sqliteTable, text, integer, primaryKey } from 'drizzle-orm/sqlite-core'
+import { relations } from 'drizzle-orm';
 
 export const works = sqliteTable('works', {
   id: integer('id').primaryKey(),
@@ -96,3 +97,110 @@ export const workRatings = sqliteTable('work_ratings', {
 }, (table) => [
   primaryKey({ columns: [table.workId, table.ratingId] })
 ]);
+
+// Relations 
+export const worksRelations = relations(works, ({ many }) => ({
+  tags: many(workTags),
+  characters: many(workCharacters),
+  fandoms: many(workFandoms),
+  relationships: many(workRelationships),
+  warnings: many(workWarnings),
+  categories: many(workCategories),
+  ratings: many(workRatings),
+}));
+export const tagsRelations = relations(tags, ({ many }) => ({
+  works: many(workTags),
+}));
+export const charactersRelations = relations(characters, ({ many }) => ({
+  works: many(workCharacters),
+}));
+export const fandomsRelations = relations(fandoms, ({ many }) => ({
+  works: many(workFandoms),
+}));
+export const relationshipsRelations = relations(relationships, ({ many }) => ({
+  works: many(workRelationships),
+}));
+export const warningsRelations = relations(warnings, ({ many }) => ({
+  works: many(workWarnings),
+}));
+export const categoriesRelations = relations(categories, ({ many }) => ({
+  works: many(workCategories),
+}));
+export const ratingsRelations = relations(ratings, ({ many }) => ({
+  works: many(workRatings),
+}));
+
+export const workTagsRelations = relations(workTags, ({ one }) => ({
+  work: one(works, {
+    fields: [workTags.workId],
+    references: [works.id],
+  }),
+  tag: one(tags, {
+    fields: [workTags.tagId],
+    references: [tags.id],
+  }),
+}));
+export const workCharactersRelations = relations(workCharacters, ({ one }) => ({
+  work: one(works, {
+    fields: [workCharacters.workId],
+    references: [works.id],
+  }),
+  character: one(characters, {
+    fields: [workCharacters.characterId],
+    references: [characters.id],
+  }),
+}));
+export const workFandomsRelations = relations(workFandoms, ({ one }) => ({
+  work: one(works, {
+    fields: [workFandoms.workId],
+    references: [works.id],
+  }),
+  fandom: one(fandoms, {
+    fields: [workFandoms.fandomId],
+    references: [fandoms.id],
+  }),
+}));
+
+export const workRelationshipsRelations = relations(workRelationships, ({ one }) => ({
+  work: one(works, {
+    fields: [workRelationships.workId],
+    references: [works.id],
+  }),
+  relationship: one(relationships, {
+    fields: [workRelationships.relationshipId],
+    references: [relationships.id],
+  }),
+}));
+
+export const workWarningsRelations = relations(workWarnings, ({ one }) => ({
+  work: one(works, {
+    fields: [workWarnings.workId],
+    references: [works.id],
+  }),
+  warning: one(warnings, {
+    fields: [workWarnings.warningId],
+    references: [warnings.id],
+  }),
+}));
+
+export const workCategoriesRelations = relations(workCategories, ({ one }) => ({
+  work: one(works, {
+    fields: [workCategories.workId],
+    references: [works.id],
+  }),
+  category: one(categories, {
+    fields: [workCategories.categoryId],
+    references: [categories.id],
+  }),
+}));
+
+export const workRatingsRelations = relations(workRatings, ({ one }) => ({
+  work: one(works, {
+    fields: [workRatings.workId],
+    references: [works.id],
+  }),
+  rating: one(ratings, {
+    fields: [workRatings.ratingId],
+    references: [ratings.id],
+  }),
+}));

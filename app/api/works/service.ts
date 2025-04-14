@@ -1,9 +1,8 @@
 import { getDb } from "@/lib/db";
-import { works } from "@/lib/db/schema";
-import { and, desc, eq, innerProduct, like, count } from "drizzle-orm";
+import { warnings, works, workWarnings } from "@/lib/db/schema";
+import { and, desc, eq, innerProduct, like, count, relations } from "drizzle-orm";
 import { IGetWorksResponse, SearchQueryParams, Work } from "../types";
 import { buildWhereConditions } from "./utils";
-import { formatResponse } from "../utils";
 
 /**
  * Fetches works based on search parameters.
@@ -22,18 +21,40 @@ export const getWorksList = async (env: any, params: SearchQueryParams): Promise
     const sortColumn = works[sortBy];
     const sortFunction = sortOrder === 'asc' ? sortColumn : desc(sortColumn);
 
-    const works_data = await db.select().from(works)
-        .where(whereConditions)
-        .orderBy(sortFunction)
-        .limit(parseInt(pageSize))
-        .offset(offset);
-    
-        const [{count: total}] = await db.select({ count: count() }).from(works).where(whereConditions);
+    const works_data = await db.query.works.findMany({
+        where: whereConditions,
+        orderBy: sortFunction,
+        limit: parseInt(pageSize),
+        offset: offset,
+        with: {
+            warnings: {
+                with: {
+                    warning: {
+                        columns: {
+                            name: true
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    const works_data_flattened = works_data.map(work => {
+        const warningList = work.warnings.map(warning => warning.warning.name);
+
+        const { warnings, ...restOfWork } = work;
+        return {
+            ...restOfWork,
+            warnings: warningList
+        };
+    })
+
+    const [{ count: total }] = await db.select({ count: count() }).from(works).where(whereConditions);
 
     const totalPages = Math.ceil(total / parseInt(pageSize))
 
     return {
-        works: works_data,
+        works: works_data_flattened,
         pagination: {
             page: parseInt(page),
             pageSize: parseInt(pageSize),

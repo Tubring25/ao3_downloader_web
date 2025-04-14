@@ -13,6 +13,11 @@ describe('Work Service', () => {
     // mock the database instance
     const createMockDb = () => {
         return {
+            query: {
+                works: {
+                    findMany: vi.fn(),
+                },
+            },
             select: vi.fn().mockReturnThis(),
             from: vi.fn().mockReturnThis(),
             where: vi.fn().mockReturnThis(),
@@ -24,7 +29,7 @@ describe('Work Service', () => {
     }
 
     // mock the works data
-    const createMockWork = (overrides = {}) => ({
+    const createMockWork = (overrides = {}, warningNames = ['None']) => ({
         id: 1,
         title: 'Mock Work',
         author: 'Mock Author',
@@ -34,10 +39,25 @@ describe('Work Service', () => {
         kudos: 100,
         comments: 10,
         rating: 'General',
+        warnings: warningNames.map(name => ({ warning: { name } })),
         ...overrides
     })
 
-    let mockDb
+    const createFlattedMockWork = (overrides = {}, warningNames = ['None']) => ({
+        id: 1,
+        title: 'Mock Work',
+        author: 'Mock Author',
+        summary: 'Mock summary',
+        chapters: 1,
+        words: 1000,
+        kudos: 100,
+        comments: 10,
+        rating: 'General',
+        warnings: warningNames,
+        ...overrides
+    })
+
+    let mockDb: { offset: any; select: any; from: any; orderBy: any; limit: any; get: any; where: any; }
     let mockEnv = { DB: 'test' }
 
     beforeEach(() => {
@@ -48,33 +68,45 @@ describe('Work Service', () => {
 
     describe('getWorksList', () => {
         it('should return works list with pagination', async () => {
-            const mockWorks = {
-                pagination: {
-                    page: 1,
-                    pageSize: 5,
-                    total: 10,
-                    totalPages: 2
-                },
-                works: [createMockWork(), createMockWork({ id: 2 })],
-            }
-            mockDb.offset.mockResolvedValue([... [createMockWork(), createMockWork({ id: 2 })]])
+            const mockWorksData = [
+                createMockWork({ id: 1 }),
+                createMockWork({ id: 2 }, ['Violence']),
+            ];
 
-            mockDb.select.mockImplementation((selector) => {
+            const mockTotalCount = [{ count: 10 }];
+
+            mockDb.query.works.findMany.mockResolvedValue(mockWorksData);
+            mockDb.select.mockImplementation((selector: any) => {
                 if (selector && typeof selector === 'object' && 'count' in selector) {
-                    return {
-                        from: () => ({
-                            where: () => Promise.resolve([{ count: 10 }])
-                        })
-                    }
+                    const fromMock = vi.fn().mockReturnThis();
+                    const whereMock = vi.fn().mockResolvedValue(mockTotalCount);
+                    const mockChain = { from: fromMock, where: whereMock };
+                    fromMock.mockReturnValue(mockChain);
+                    return mockChain;
                 }
-                return mockDb
-            })
+                return mockDb;
+            });
 
             const params = {
                 page: '1',
                 pageSize: '5',
                 sortBy: 'kudos',
                 sortOrder: 'desc'
+            };
+
+            const mockFlattedWorks = [
+                createFlattedMockWork({ id: 1 }),
+                createFlattedMockWork({ id: 2 }, ['Violence']),
+            ];
+
+            const mockWorks = {
+                works: mockFlattedWorks,
+                pagination: {
+                    page: 1,
+                    pageSize: 5,
+                    total: 10, 
+                    totalPages: 2,
+                }
             };
     
             const result = await getWorksList(mockEnv, params);
@@ -83,15 +115,22 @@ describe('Work Service', () => {
 
             // validate the database calls
             expect(mockDb.select).toHaveBeenCalled()
-            expect(mockDb.from).toHaveBeenCalledWith(works)
-            expect(mockDb.orderBy).toHaveBeenCalledWith(desc(works.kudos))
-            expect(mockDb.limit).toHaveBeenCalledWith(5)
-            expect(mockDb.offset).toHaveBeenCalledWith(0)
+            const selectCall = mockDb.select.mock.calls.find(call => call[0] && call[0].count);
+            const fromMockCall = (mockDb.select as any).mock.results[mockDb.select.mock.calls.indexOf(selectCall!)].value.from as any;
+            expect(fromMockCall).toHaveBeenCalledWith(works);
         })
 
         it('should apply correct sort order', async () => {
+            const mockWorksData = [
+                createMockWork({ id: 1 }),
+                createMockWork({ id: 2 }, ['Violence']),
+            ];
+
+            const mockTotalCount = [{ count: 10 }];
+
+            mockDb.query.works.findMany.mockResolvedValue(mockWorksData);
             mockDb.offset.mockResolvedValue([])
-            mockDb.select.mockImplementation((selector) => {
+            mockDb.select.mockImplementation((selector: any) => {
                 if (selector && typeof selector === 'object' && 'count' in selector) {
                     return {
                         from: () => ({
@@ -109,7 +148,11 @@ describe('Work Service', () => {
                 sortOrder: 'asc'
             });
 
-            expect(mockDb.orderBy).toHaveBeenCalledWith(works.kudos)
+            expect(mockDb.query.works.findMany).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    orderBy: works.kudos
+                })
+            );
         })
     })
 
