@@ -35,33 +35,33 @@ export default function StoryCard({ story }: StoryCardProps) {
   // 3D 效果的运动值
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
-  
+
   // 使用弹簧效果让动画更平滑
   const rotateX = useSpring(mouseY, { stiffness: 100, damping: 30 });
   const rotateY = useSpring(mouseX, { stiffness: 100, damping: 30 });
 
   // 鼠标悬停状态
   const [isHovered, setIsHovered] = useState(false);
-  
+
   function onMouseMove({ currentTarget, clientX, clientY }: MouseEvent) {
     const { left, top, width, height } = currentTarget.getBoundingClientRect();
     const percentX = (clientX - left) / width;
     const percentY = (clientY - top) / height;
-    
+
     // 计算旋转角度，中心为原点
     const boundedX = Math.max(-0.5, Math.min(0.5, (percentX - 0.5) * 1.2));
     const boundedY = Math.max(-0.5, Math.min(0.5, (percentY - 0.5) * 1.2));
-    
+
     mouseX.set(boundedX * 10); // 将旋转角度限制在 -5° 到 5° 之间
     mouseY.set(boundedY * -10); // Y轴反转以获得正确的倾斜方向
   }
-  
+
   function onMouseLeave() {
     mouseX.set(0);
     mouseY.set(0);
     setIsHovered(false);
   }
-  
+
   function onMouseEnter() {
     setIsHovered(true);
   }
@@ -94,26 +94,32 @@ export default function StoryCard({ story }: StoryCardProps) {
       >
         <Card className={cn(
           "bg-purple-950/50 border border-purple-300/20 transition-all duration-200 shadow-md overflow-hidden",
-          isHovered ? "border-purple-400/40 shadow-lg" : ""
+          isHovered ? "border-purple-400/40 shadow-lg cursor-pointer" : ""
         )}>
           <CardHeader className="pb-2">
-            <div className="mb-1">
-              <h3 className="flex items-center text-xl font-bold text-purple-100 line-clamp-2">
+            <div className='flex items-start mb-1'>
+              <div className='mr-2 flex-shrink-0 pt-[1px]'>
                 <RatingIcon rating={story.rating} />
-                <Link href={`/story/${story.id}`} className={cn(
-                  "transition-colors ml-2",
-                  isHovered ? "text-purple-300" : "text-purple-100 hover:text-purple-300"
-                )}>
-                  {story.title}
-                </Link>
-              </h3>
-              <p className="text-purple-300 text-sm">by {story.author}</p>
+              </div>
+              <div className='flex-grow min-w-0'>
+                <h3 className='text-xl font-bold text-purple-100 line-clamp-2 h-[3.5rem] leading-snug'>
+                  <Link href={`/archive/${story.id}`} className={cn(
+                    "transition-colors",
+                    isHovered ? "text-purple-300" : "text-purple-100 hover:text-purple-300"
+                  )}>
+                    {story.title}
+                  </Link>
+                </h3>
+              </div>
             </div>
+            <p className='text-purple-300 text-sm mt-0.5 font-bold'>
+              by {story.author}
+            </p>
           </CardHeader>
-          
+
           <CardContent className="pt-0">
             <p className="text-purple-200/80 text-sm line-clamp-3">{story.summary}</p>
-            
+
             <div className="flex flex-wrap gap-2 my-3">
               {story.warnings.slice(0, 2).map((warning, index) => (
                 <span key={index} className={`text-xs text-purple-200 px-2 py-1 rounded ${getWarningColor(warning as Warning)}`}>
@@ -127,7 +133,7 @@ export default function StoryCard({ story }: StoryCardProps) {
               )}
             </div>
           </CardContent>
-          
+
           <CardFooter className={cn("text-xs text-purple-300/70 flex justify-between pt-0")}>
             <div className="flex space-x-3">
               <span>{story.words.toLocaleString()} words</span>

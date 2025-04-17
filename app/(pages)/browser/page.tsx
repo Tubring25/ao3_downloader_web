@@ -50,8 +50,6 @@ function BrowserContent() {
   };
   const lists = data || [];
 
-  console.log('the rendered data', lists);
-
   return (
     <div className="h-full py-8 px-4">
       {/* Search Section */}

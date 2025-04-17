@@ -22,8 +22,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
+  modal
 }: Readonly<{
   children: React.ReactNode;
+  modal: React.ReactNode;
 }>) {
   return (
     <html lang="en" className="scroll-smooth">
@@ -40,6 +42,7 @@ export default function RootLayout({
             <Header />
             <main className="flex-1 overflow-auto page-content">
               {children}
+              {modal}
             </main>
           </div>
         </Providers>

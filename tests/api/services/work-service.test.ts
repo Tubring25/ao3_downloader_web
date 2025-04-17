@@ -84,17 +84,17 @@ describe('Work Service', () => {
                     fromMock.mockReturnValue(mockChain);
                     return mockChain;
                 }
-                return mockDb;
-            });
-
-            const params = {
-                page: '1',
-                pageSize: '5',
-                sortBy: 'kudos',
-                sortOrder: 'desc'
-            };
-
-            const mockFlattedWorks = [
+                 return mockDb;
+             });
+ 
+             const params = {
+                 page: '1',
+                 pageSize: '5',
+                 sortBy: 'kudos',
+                 sortOrder: 'desc'
+             } as const; // Ensure literal types are inferred
+ 
+             const mockFlattedWorks = [
                 createFlattedMockWork({ id: 1 }),
                 createFlattedMockWork({ id: 2 }, ['Violence']),
             ];
