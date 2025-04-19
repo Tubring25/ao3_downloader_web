@@ -3,12 +3,12 @@ import React, { useState } from 'react';
 import { useQuery } from "@tanstack/react-query";
 import { Search, Info } from 'lucide-react';
 import { queryWorks } from '@/app/api/search/index'
-import StoryCard from '@/components/storycard/StoryCard';
+import StoryCard from '@/components/shared/storycard/StoryCard';
 import { Story } from '@/app/types/story';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import InstructionsDialog from '@/components/storycard/InstructionsDialog';
+import InstructionsDialog from '@/components/shared/storycard/InstructionsDialog';
 import { Suspense } from 'react'
 
 function BrowserContent() {

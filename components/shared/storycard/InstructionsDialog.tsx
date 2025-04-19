@@ -1,5 +1,5 @@
-import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogHeader, DialogFooter, DialogClose } from '../ui/dialog';
-import { Button } from '../ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogHeader, DialogFooter, DialogClose } from '../../ui/dialog';
+import { Button } from '../../ui/button';
 import Link from 'next/link';
 import { Rating } from '@/app/types/story';
 import RatingIcon from './RatingIcon';

@@ -1,7 +1,7 @@
 "use client";
 import Link from 'next/link';
 import { Story, Warning } from '@/app/types/story';
-import { Card, CardContent, CardFooter, CardHeader } from '../ui/card';
+import { Card, CardContent, CardFooter, CardHeader } from '../../ui/card';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
 import { MouseEvent, useState } from 'react';
 import { cn } from '@/lib/utils';
