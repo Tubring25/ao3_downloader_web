@@ -3,8 +3,9 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogDescription, D
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ShieldCloseIcon } from 'lucide-react';
+import { X } from 'lucide-react';
 import Link from "next/link";
+import { RatingBadge } from "@/components/ui/badge";
 
 export default function ArchiveModal({ work }: { work: any }) {
     const [isOpen, setIsOpen] = useState(true);
@@ -38,25 +39,23 @@ export default function ArchiveModal({ work }: { work: any }) {
             <DialogContent className="bg-purple-950/50 border border-purple-300/20 transition-all duration-200 shadow-md overflow-hidden text-white">
                 <DialogHeader className="space-y-4 pb-2">
                     <div className="flex items-center gap-3">
-                        <div className="flex justify-center items-center bg-pink-800 rounded w-8 h-8 text-white font-medium">
-                            {work.rating?.[0]?.toUpperCase() || "E"}
-                        </div>
+                        <RatingBadge rating={work.rating} />
                         <DialogTitle className="text-xl font-bold">{work.title}</DialogTitle>
                     </div>
                     <div className="text-gray-300">
                         by {work.author || "Unknown Author"}
                     </div>
                 </DialogHeader>
-                <DialogDescription className="text-sm text-gray-200 mt-2 mb-4 max-h-[200px] overflow-y-auto">
+                <DialogDescription className="text-sm text-gray-200 mt-2 mb-4 max-h-[150px] overflow-y-auto">
                     {work.summary || "No summary available."}
                 </DialogDescription>
 
                 <div className="bg-purple-900/50 p-3 rounded-md my-2 text-sm">
                     <div className="grid grid-cols-2 gap-2">
-                        <p><span className="text-gray-300">Fandom:</span> {work.fandom || "Not specified"}</p>
-                        <p><span className="text-gray-300">Rating:</span> {work.rating || "Not rated"}</p>
-                        {work.wordCount && <p><span className="text-gray-300">Words:</span> {work.wordCount.toLocaleString()}</p>}
-                        {work.chapters && <p><span className="text-gray-300">Chapters:</span> {work.chapters}</p>}
+                        <p><span className="text-gray-300">Kudos:</span> {work.kudos.toLocaleString()}</p>
+                        <p><span className="text-gray-300">Hits:</span> {work.hits.toLocaleString()}</p>
+                        <p><span className="text-gray-300">Words:</span> {(work.words || work.wordCount || 0).toLocaleString()}</p>
+                        <p><span className="text-gray-300">Chapters:</span> {work.chapters || "?"}</p>
                     </div>
                 </div>
 
@@ -80,7 +79,7 @@ export default function ArchiveModal({ work }: { work: any }) {
 
                 <DialogClose asChild className="absolute top-4 right-4 text-gray-400 hover:text-white focus:outline-none">
                     <button aria-label="Close">
-                       <ShieldCloseIcon className="h-5 w-5" />
+                       <X className="h-5 w-5" />
                     </button>
                 </DialogClose>
             </DialogContent>

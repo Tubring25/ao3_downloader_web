@@ -1,46 +1,25 @@
 "use client";
 import Link from 'next/link';
-import { Story, Warning } from '@/app/types/story';
 import { Card, CardContent, CardFooter, CardHeader } from '../../ui/card';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
 import { MouseEvent, useState } from 'react';
 import { cn } from '@/lib/utils';
-import RatingIcon from './RatingIcon';
+import { Warning, Work } from '@/app/api/types';
+import { RatingBadge, WarningBadge } from '@/components/ui/badge';
 
 
 interface StoryCardProps {
-  story: Story;
+  story: Work;
 }
 
-const getWarningColor = (warning: Warning): string => {
-  switch (warning) {
-    case 'Creator Chose Not To Use Archive Warnings':
-      return 'bg-gray-400/50';
-    case 'Graphic Depictions Of Violence':
-      return 'bg-orange-400/50';
-    case 'Major Character Death':
-      return 'bg-red-500/50';
-    case 'Rape/Non-Con':
-      return 'bg-red-400/50';
-    case 'Underage Sex':
-      return 'bg-yellow-400/50';
-    case 'No Archive Warnings Apply':
-      return 'bg-green-400/50';
-    default:
-      return 'bg-gray-800/50';
-  }
-}
 
 export default function StoryCard({ story }: StoryCardProps) {
-  // 3D 效果的运动值
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
 
-  // 使用弹簧效果让动画更平滑
   const rotateX = useSpring(mouseY, { stiffness: 100, damping: 30 });
   const rotateY = useSpring(mouseX, { stiffness: 100, damping: 30 });
 
-  // 鼠标悬停状态
   const [isHovered, setIsHovered] = useState(false);
 
   function onMouseMove({ currentTarget, clientX, clientY }: MouseEvent) {
@@ -48,12 +27,11 @@ export default function StoryCard({ story }: StoryCardProps) {
     const percentX = (clientX - left) / width;
     const percentY = (clientY - top) / height;
 
-    // 计算旋转角度，中心为原点
     const boundedX = Math.max(-0.5, Math.min(0.5, (percentX - 0.5) * 1.2));
     const boundedY = Math.max(-0.5, Math.min(0.5, (percentY - 0.5) * 1.2));
 
-    mouseX.set(boundedX * 10); // 将旋转角度限制在 -5° 到 5° 之间
-    mouseY.set(boundedY * -10); // Y轴反转以获得正确的倾斜方向
+    mouseX.set(boundedX * 10);
+    mouseY.set(boundedY * -10);
   }
 
   function onMouseLeave() {
@@ -98,8 +76,8 @@ export default function StoryCard({ story }: StoryCardProps) {
         )}>
           <CardHeader className="pb-2">
             <div className='flex items-start mb-1'>
-              <div className='mr-2 flex-shrink-0 pt-[1px]'>
-                <RatingIcon rating={story.rating} />
+              <div className='mr-2 flex-shrink-0 pt-[1px] text-white'>
+                <RatingBadge rating={story.rating} />
               </div>
               <div className='flex-grow min-w-0'>
                 <h3 className='text-xl font-bold text-purple-100 line-clamp-2 h-[3.5rem] leading-snug'>
@@ -122,12 +100,13 @@ export default function StoryCard({ story }: StoryCardProps) {
 
             <div className="flex flex-wrap gap-2 my-3">
               {story.warnings.slice(0, 2).map((warning, index) => (
-                <span key={index} className={`text-xs text-purple-200 px-2 py-1 rounded ${getWarningColor(warning as Warning)}`}>
-                  {warning}
-                </span>
+                <WarningBadge
+                  key={index}
+                  warning={warning as Warning}
+                />
               ))}
               {story.warnings.length > 2 && (
-                <span className={`text-xs text-purple-200 px-2 py-1 rounded ${getWarningColor(story.warnings[0] as Warning)}`}>
+                <span className={`text-xs text-purple-200 px-2 py-1 rounded`}>
                   +{story.warnings.length - 2} more
                 </span>
               )}

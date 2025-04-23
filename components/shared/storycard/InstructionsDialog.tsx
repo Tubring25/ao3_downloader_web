@@ -1,8 +1,8 @@
 import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogHeader, DialogFooter, DialogClose } from '../../ui/dialog';
 import { Button } from '../../ui/button';
 import Link from 'next/link';
-import { Rating } from '@/app/types/story';
-import RatingIcon from './RatingIcon';
+import { Rating } from '@/app/api/types';
+import { RatingBadge } from '@/components/ui/badge';
 
 export const ratingArray: Rating[] = [
   'General Audiences',
@@ -32,7 +32,7 @@ export default function InstructionsDialog({ open, onOpenChange }: { open: boole
             <ul className='flex flex-col gap-2'>
                 {ratingArray.map((rating) => (
                 <li key={rating}>
-                  <RatingIcon rating={rating} isLight={false} /> 
+                  <RatingBadge rating={rating} /> 
                   <span className='ml-2'>{rating}</span>
                 </li>
               ))}

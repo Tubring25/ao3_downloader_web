@@ -1,15 +1,18 @@
 import { Hono } from 'hono'
 import { handle } from 'hono/vercel'
 import { cors } from 'hono/cors'
-import { getDb } from '@/lib/db'
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
 import { getWorkById, getWorksList } from '../works/service';
+import { D1Database } from '@cloudflare/workers-types';
 
 // export const runtime = 'edge';
 
-// create a new Hono instance
-export const app = new Hono().basePath('/api/works')
+type Bindings = {
+  DB: D1Database
+}
+
+const app = new Hono<{ Bindings: Bindings}>().basePath('/api/works')
 app.notFound((c) => c.json({ message: 'Not Found', ok: false }, 404))
 
 // config the proxy
@@ -26,7 +29,7 @@ export const searchSchema = z.object({
   rating: z.string().optional(),
   keyword: z.string().optional(),
   // sort:
-  sortBy: z.enum(['kudos', 'comments', 'words']).default('kudos'),
+  sortBy: z.enum(['kudos', 'comments', 'words', 'hits']).default('kudos'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
   // pagination
   page: z.string().default('1'),

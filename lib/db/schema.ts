@@ -12,6 +12,9 @@ export const works = sqliteTable('works', {
   language: text('language').notNull(),
   summary: text('summary'),
   rating: text('rating').notNull(),
+  hits: integer('hits').notNull(),
+  bookmarks: integer('bookmarks').notNull(),
+  complete: integer('complete').notNull().default(0),
 });
 
 export const tags = sqliteTable('tags', {
