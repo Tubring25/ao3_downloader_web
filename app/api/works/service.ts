@@ -1,7 +1,7 @@
 import { getDb } from "@/lib/db";
-import { warnings, works, workWarnings } from "@/lib/db/schema";
+import { works } from "@/lib/db/schema";
 import { and, desc, eq, innerProduct, like, count, relations } from "drizzle-orm";
-import { IGetWorksResponse, SearchQueryParams, Work } from "../types";
+import { IGetWorkByIdResponse, IGetWorksResponse, SearchQueryParams, Work } from "../types";
 import { buildWhereConditions } from "./utils";
 
 /**
@@ -20,7 +20,7 @@ export const getWorksList = async (env: any, params: SearchQueryParams): Promise
 
     const sortColumn = works[sortBy];
     const sortFunction = sortOrder === 'asc' ? sortColumn : desc(sortColumn);
-
+    console.log('sortFunction', sortFunction);
     const works_data = await db.query.works.findMany({
         where: whereConditions,
         orderBy: sortFunction,
@@ -72,9 +72,67 @@ export const getWorksList = async (env: any, params: SearchQueryParams): Promise
  * @returns {Promise<Work | null>} - A promise that resolves to the work data or null if not found.
  */
 
-export const getWorkById = async (env: any, id: number): Promise<Work | null> => {
+export const getWorkById = async (env: any, id: number): Promise<IGetWorkByIdResponse | null> => {
     const db = getDb(env);
-    const work = await db.select().from(works).where(eq(works.id, id)).get();
+    const workFromDB = await db.query.works.findFirst({
+        where: eq(works.id, id),
+        with: {
+            warnings: {
+                with: {
+                    warning: {
+                        columns: { name: true }
+                    }
+                }
+            },
+            characters: {
+                with: {
+                    character: {
+                        columns: { name: true }
+                    }
+                }
+            },
+            fandoms: {
+                with: {
+                    fandom: {
+                        columns: { name: true }
+                    }
+                }
+            },
+            relationships: {
+                with: {
+                    relationship: {
+                        columns: { name: true }
+                    }
+                }
+            },
+            tags: {
+                with: {
+                    tag: {
+                        columns: { name: true }
+                    }
+                }
+            },
+            categories: {
+                with: {
+                    category: {
+                        columns: { name: true }
+                    }
+                }
+            }
+        }
+    })
+
+    const { tags, characters, fandoms, relationships, warnings, categories, ...restOfWork } = workFromDB || {};
+
+    const work = workFromDB ? {
+        tags: tags.map(tag => tag.tag.name),
+        characters: characters.map(character => character.character.name),
+        fandoms: fandoms.map(fandom => fandom.fandom.name),
+        relationships: relationships.map(relationship => relationship.relationship.name),
+        warnings: warnings.map(warning => warning.warning.name),
+        categories: categories.map(category => category.category.name),
+        ...restOfWork,
+    } : null;
 
     return work ?? null;
 }

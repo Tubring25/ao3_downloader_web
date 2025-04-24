@@ -4,12 +4,12 @@ import { useQuery } from "@tanstack/react-query";
 import { Search, Info } from 'lucide-react';
 import { queryWorks } from '@/app/api/search/index'
 import StoryCard from '@/components/shared/storycard/StoryCard';
-import { Story } from '@/app/types/story';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import InstructionsDialog from '@/components/shared/storycard/InstructionsDialog';
 import { Suspense } from 'react'
+import { Work } from '@/app/api/types';
 
 function BrowserContent() {
   const searchParams = useSearchParams();
@@ -113,7 +113,7 @@ function BrowserContent() {
 
         {!isLoading && !error && lists && lists.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-8">
-            {lists.map((story: Story) => (
+            {lists.map((story: Work) => (
               <StoryCard key={story.id} story={story} />
             ))}
           </div>

@@ -17,3 +17,7 @@ export interface PagedResult<T> {
   pageSize: number,
   totalPages: number
 }
+
+export function getAuthorLink(author: string) {
+  return `https://archiveofourown.org/users/${author}/pseuds/${author}`;
+}

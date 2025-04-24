@@ -16,6 +16,7 @@ describe('Work Service', () => {
             query: {
                 works: {
                     findMany: vi.fn(),
+                    findFirst: vi.fn(),
                 },
             },
             select: vi.fn().mockReturnThis(),
@@ -157,27 +158,104 @@ describe('Work Service', () => {
     })
 
     describe('getWorkById', () => {
-        it('should return a work when found', async () => {
-            const mockWork = createMockWork({ id: 123 });
-            mockDb.get.mockResolvedValue(mockWork);
+        it('should return a work with all related details when found', async () => {
+            const workId = 123;
 
-            const result = await getWorkById(mockEnv, 123);
-            expect(result).toEqual(mockWork);
-            expect(mockDb.select).toHaveBeenCalled()
-            expect(mockDb.from).toHaveBeenCalledWith(works);
-            expect(mockDb.where).toHaveBeenCalledWith(eq(works.id, 123));
-            expect(mockDb.get).toHaveBeenCalled();
-        })
+            const mockDbResult = {
+                id: workId,
+                title: 'Detailed Mock Work',
+                author: 'Mock Author',
+                summary: 'Detailed summary',
+                chapters: 5,
+                words: 5000,
+                kudos: 500,
+                comments: 50,
+                language: 'English',
+                rating: 'Mature',
+                tags: [
+                    { tag: { id: 1, name: 'Fluff' } },
+                    { tag: { id: 2, name: 'Angst' } },
+                ],
+                characters: [
+                    { character: { id: 10, name: 'Character A' } },
+                    { character: { id: 11, name: 'Character B' } },
+                ],
+                fandoms: [
+                    { fandom: { id: 20, name: 'Fandom X' } },
+                ],
+                relationships: [
+                    { relationship: { id: 30, name: 'Character A/Character B' } },
+                ],
+                warnings: [
+                    { warning: { id: 40, name: 'Major Character Death' } },
+                    { warning: { id: 41, name: 'Graphic Depictions Of Violence' } },
+                ],
+                categories: [
+                    { category: { id: 50, name: 'M/M' } },
+                ],
+            };
+
+            const expectedFlattedWork = {
+                id: workId,
+                title: 'Detailed Mock Work',
+                author: 'Mock Author',
+                summary: 'Detailed summary',
+                chapters: 5,
+                words: 5000,
+                kudos: 500,
+                comments: 50,
+                language: 'English',
+                rating: 'Mature',
+                tags: ['Fluff', 'Angst'],
+                characters: ['Character A', 'Character B'],
+                fandoms: ['Fandom X'],
+                relationships: ['Character A/Character B'],
+                warnings: ['Major Character Death', 'Graphic Depictions Of Violence'],
+                categories: ['M/M'],
+            };
+
+            mockDb.query.works.findFirst.mockResolvedValue(mockDbResult);
+
+            const result = await getWorkById(mockEnv, workId);
+
+            expect(result).toEqual(expectedFlattedWork);
+
+            // Validate the database call
+            expect(mockDb.query.works.findFirst).toHaveBeenCalledWith({
+                where: eq(works.id, workId),
+                with: {
+                    tags: { with: { tag: { columns: { name: true } } } },
+                    characters: { with: { character: { columns: { name: true } } } },
+                    fandoms: { with: { fandom: { columns: { name: true } } } },
+                    relationships: { with: { relationship: { columns: { name: true } } } },
+                    warnings: { with: { warning: { columns: { name: true } } } },
+                    categories: { with: { category: { columns: { name: true } } } },
+                }
+            });
+        });
+
 
         it('should return null when work not found', async () => {
-            mockDb.get.mockResolvedValue(null);
+            const workId = 999;
 
-            const result = await getWorkById(mockEnv, 999);
+            mockDb.query.works.findFirst.mockResolvedValue(undefined);
+
+            const result = await getWorkById(mockEnv, workId);
+
             expect(result).toBeNull();
-            expect(mockDb.select).toHaveBeenCalled()
-            expect(mockDb.from).toHaveBeenCalledWith(works);
-            expect(mockDb.where).toHaveBeenCalledWith(eq(works.id, 999));
-            expect(mockDb.get).toHaveBeenCalled();
-        })
+
+            // Validate the database call
+            expect(mockDb.query.works.findFirst).toHaveBeenCalledWith({
+                where: eq(works.id, workId),
+                with: {
+                    tags: { with: { tag: { columns: { name: true } } } },
+                    characters: { with: { character: { columns: { name: true } } } },
+                    fandoms: { with: { fandom: { columns: { name: true } } } },
+                    relationships: { with: { relationship: { columns: { name: true } } } },
+                    warnings: { with: { warning: { columns: { name: true } } } },
+                    categories: { with: { category: { columns: { name: true } } } },
+                }
+            });
+        });
     })
 })
