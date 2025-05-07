@@ -1,6 +1,6 @@
 "use client";
-import React, { useState } from 'react';
-import { useQuery } from "@tanstack/react-query";
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { Search, Info } from 'lucide-react';
 import { queryWorks } from '@/app/api/search/index'
 import StoryCard from '@/components/shared/storycard/StoryCard';
@@ -18,26 +18,56 @@ function BrowserContent() {
   const [keyword, setKeyword] = useState<string>(initialKeyword);
   const currentKeyword = searchParams.get('keyword') || '';
   const [isInstructionsDialogOpen, setIsInstructionsDialogOpen] = useState<boolean>(false);
-  
+
+  const loaderRef = useRef<HTMLDivElement>(null);
+
   // Use the query with proper error handling
-  const { data, isLoading, error, refetch } = useQuery({
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, error, refetch } = useInfiniteQuery({
     queryKey: ['stories', currentKeyword],
-    queryFn: async () => {
-      if (!currentKeyword.trim()) return [];
+    queryFn: async ({ pageParam = 1 }) => {
+      if (!currentKeyword.trim()) return { data: { works: [] }, nextPage: undefined };
       try {
-        const result = await queryWorks(1, 10, currentKeyword);
-        console.log('Query result:', result);
-        return result.data.works || [];
+        const result = await queryWorks(pageParam, 10, currentKeyword);
+        console.log('Query result for page', pageParam, ':', result);
+        const nextPage = result.data.works && result.data.works.length === 10 ? pageParam + 1 : undefined;
+        return { data: result.data, nextPage };
       } catch (err) {
         console.error('Error in query function:', err);
         throw err;
       }
     },
+    getNextPageParam: (lastPage) => lastPage.nextPage,
     enabled: !!currentKeyword.trim(),
-    retry: 1,
-    staleTime: 60000, // 1 minute
     refetchOnWindowFocus: false,
+    retry: 1,
+    staleTime: 1000 * 60 * 5,
+    initialPageParam: 1
   });
+
+  // Intersection observer callback
+  const handleObserver = useCallback((entries: IntersectionObserverEntry[]) => {
+    const [entry] = entries
+    if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage])
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(handleObserver, {
+      rootMargin: '0px 0px 20% 0px',
+      threshold: 0.1,
+    })
+
+    if (loaderRef.current) {
+      observer.observe(loaderRef.current)
+    }
+
+    return () => {
+      if (loaderRef.current) {
+        observer.unobserve(loaderRef.current)
+      }
+    }
+  }, [handleObserver, loaderRef])
 
   // Update URL when keyword changes and trigger search
   const handleSearch = () => {
@@ -48,7 +78,8 @@ function BrowserContent() {
       refetch();
     }
   };
-  const lists = data || [];
+
+  const allWorks = data?.pages.flatMap(page => page.data.works || []) || []
 
   return (
     <div className="h-full py-8 px-4">
@@ -104,24 +135,34 @@ function BrowserContent() {
             <p>Searching stories...</p>
           </div>
         )}
-        
+
         {error && (
           <div className="text-center text-red-400 bg-red-900/20 rounded-lg p-4">
             <p>Error: {error instanceof Error ? error.message : 'An error occurred while searching.'}</p>
           </div>
         )}
 
-        {!isLoading && !error && lists && lists.length > 0 ? (
+        {!isLoading && !error && allWorks && allWorks.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-8">
-            {lists.map((story: Work) => (
+            {allWorks.map((story: Work) => (
               <StoryCard key={story.id} story={story} />
             ))}
           </div>
-        ) : !isLoading && !error && lists && lists.length === 0 && currentKeyword ? (
+        ) : !isLoading && !error && allWorks && allWorks.length === 0 && currentKeyword ? (
           <div className="text-center text-purple-200 bg-purple-900/20 rounded-lg p-8">
             <p>No stories found for &ldquo;{currentKeyword}&rdquo;</p>
           </div>
         ) : null}
+
+        {/* Loader element that will trigger next page fetch */}
+        <div ref={loaderRef} className="h-10 w-full">
+          {isFetchingNextPage && (
+            <div className="text-center text-purple-200 py-4">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-500 mx-auto mb-1"></div>
+              <p className="text-sm">Loading more stories...</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

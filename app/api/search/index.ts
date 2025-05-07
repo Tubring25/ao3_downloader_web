@@ -1,12 +1,12 @@
 import api from '../apiService';
 
-export const queryWorks = async (page: number, pageSize: number, search: string) => {
+export const queryWorks = async (page: number, pageSize: number, keyword: string) => {
   try {
     const response = await api.get('/works', {
       params: {
         page,
         pageSize,
-        search,
+        keyword,
       },
     });
     return response.data;
