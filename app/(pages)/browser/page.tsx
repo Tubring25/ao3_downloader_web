@@ -10,6 +10,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import InstructionsDialog from '@/components/shared/storycard/InstructionsDialog';
 import { Suspense } from 'react'
 import { Work } from '@/app/api/types';
+import ScrollToTopButton from '@/components/shared/ScrollToTopButton';
 
 function BrowserContent() {
   const searchParams = useSearchParams();
@@ -164,6 +165,7 @@ function BrowserContent() {
           )}
         </div>
       </div>
+      <ScrollToTopButton />
     </div>
   );
 }
