@@ -88,3 +88,4 @@ app.get('/:id', async (c) => {
 })
 
 export const GET = handle(app)
+export { app } 
