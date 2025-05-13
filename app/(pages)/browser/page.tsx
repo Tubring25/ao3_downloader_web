@@ -26,7 +26,6 @@ function BrowserContent() {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, error, refetch } = useInfiniteQuery({
     queryKey: ['stories', currentKeyword],
     queryFn: async ({ pageParam = 1 }) => {
-      if (!currentKeyword.trim()) return { data: { works: [] }, nextPage: undefined };
       try {
         const result = await queryWorks(pageParam, 10, currentKeyword);
         console.log('Query result for page', pageParam, ':', result);
@@ -38,7 +37,7 @@ function BrowserContent() {
       }
     },
     getNextPageParam: (lastPage) => lastPage.nextPage,
-    enabled: !!currentKeyword.trim(),
+    enabled: true,
     refetchOnWindowFocus: false,
     retry: 1,
     staleTime: 1000 * 60 * 5,
@@ -70,13 +69,43 @@ function BrowserContent() {
     }
   }, [handleObserver, loaderRef])
 
+  useEffect(() => {
+    // Debounce the keyword change to prevent excessive re-renders
+    const handler = setTimeout(() => {
+      const trimmedInput = keyword.trim()
+
+      const newTargetHref = trimmedInput ?
+        `/browser?keyword=${encodeURIComponent(trimmedInput)}` :
+        '/browser'
+
+      const currentHref = currentKeyword
+        ? `/browser?keyword=${encodeURIComponent(currentKeyword)}`
+        : '/browser';
+
+      if (newTargetHref !== currentHref) {
+        router.push(newTargetHref)
+      }
+    }, 1000)
+
+    return () => clearTimeout(handler)
+  }, [keyword, currentKeyword, router])
+
   // Update URL when keyword changes and trigger search
   const handleSearch = () => {
-    if (keyword.trim()) {
-      // Update URL with new keyword
-      router.push(`/browser?keyword=${encodeURIComponent(keyword.trim())}`);
-      // Trigger the search
-      refetch();
+    const trimmedKeyword = keyword.trim()
+
+    const targetHref = trimmedKeyword
+      ? `/browser?keyword=${encodeURIComponent(trimmedKeyword)}`
+      : '/browser'
+
+    const currentHref = currentKeyword
+      ? `/browser?keyword=${encodeURIComponent(currentKeyword)}`
+      : '/browser'
+
+    if (targetHref !== currentHref) {
+      router.push(targetHref)
+    } else {
+      refetch()
     }
   };
 
