@@ -52,6 +52,17 @@ export const ratings = sqliteTable('ratings', {
   name: text('name').notNull()
 })
 
+export const workComments = sqliteTable('work_comments', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  workId: integer('work_id').notNull().references(() => works.id),
+  content: text('content').notNull(),
+  authorName: text('author_name').notNull(),
+  upvotes: integer('upvotes').notNull().default(0),
+  downvotes: integer('downvotes').notNull().default(0),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
+  isHidden: integer('is_hidden').notNull().default(0),
+});
+
 export const workTags = sqliteTable('work_tags', {
   workId: integer('work_id').notNull().references(() => works.id),
   tagId: integer('tag_id').notNull().references(() => tags.id),
@@ -110,6 +121,7 @@ export const worksRelations = relations(works, ({ many }) => ({
   warnings: many(workWarnings),
   categories: many(workCategories),
   ratings: many(workRatings),
+  comments: many(workComments),
 }));
 export const tagsRelations = relations(tags, ({ many }) => ({
   works: many(workTags),
@@ -132,7 +144,6 @@ export const categoriesRelations = relations(categories, ({ many }) => ({
 export const ratingsRelations = relations(ratings, ({ many }) => ({
   works: many(workRatings),
 }));
-
 export const workTagsRelations = relations(workTags, ({ one }) => ({
   work: one(works, {
     fields: [workTags.workId],
@@ -205,5 +216,12 @@ export const workRatingsRelations = relations(workRatings, ({ one }) => ({
   rating: one(ratings, {
     fields: [workRatings.ratingId],
     references: [ratings.id],
+  }),
+}));
+
+export const workCommentsRelations = relations(workComments, ({ one }) => ({
+  work: one(works, {
+    fields: [workComments.workId],
+    references: [works.id],
   }),
 }));

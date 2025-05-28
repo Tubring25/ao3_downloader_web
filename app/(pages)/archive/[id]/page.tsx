@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { queryWorkById } from '@/app/api/search';
 import React from 'react';
 import WorkInfo from './components/WorkInfo';
+import { Comments } from './components/Comments';
 
 export default function WorkDetail({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
@@ -61,7 +62,7 @@ export default function WorkDetail({ params }: { params: Promise<{ id: string }>
 
 
         {/* Comments section */}
-
+        <Comments workId={work.id} />
       </main>
     </>
   );
