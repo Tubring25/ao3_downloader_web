@@ -80,9 +80,9 @@ export async function createComment(env: Env, data: ICreateCommentRequest): Prom
 export async function voteComment(env: Env, data: IVoteCommentRequest): Promise<{ success: boolean; message: string }> {
 
   const db = getDb(env)
-  const { commentId, voteType, workId } = data
+  const { commentId, newVoteType, prevVoteType, workId } = data
 
-  const comment = await db
+  const commentResult = await db
     .select()
     .from(workComments)
     .where(and(
@@ -91,23 +91,44 @@ export async function voteComment(env: Env, data: IVoteCommentRequest): Promise<
     ))
     .execute()
 
-  const updateData: Partial<workComment> = {}
+  if (!commentResult || commentResult.length === 0) {
+    return { success: false, message: 'Comment not found' };
+  }
+  const currentComment = commentResult[0];
 
-  if (voteType === 1) {
-    updateData.upvotes = comment[0].upvotes + 1
-    updateData.downvotes = comment[0].downvotes === 0 ? 0 : comment[0].downvotes - 1
-  } else {
-    updateData.downvotes = comment[0].downvotes === 0 ? 0 : comment[0].downvotes + 1
-    updateData.upvotes = comment[0].upvotes === 0 ? 0 : comment[0].upvotes - 1
+  let finalUpvotes = currentComment.upvotes;
+  let finalDownvotes = currentComment.downvotes;
+
+  if (prevVoteType === 1) {
+    finalUpvotes--;
+  } else if (prevVoteType === -1) {
+    finalDownvotes--;
   }
 
-  console.log("updateData", updateData)
+  if (newVoteType === 1) {
+    finalUpvotes++;
+  } else if (newVoteType === -1) {
+    finalDownvotes++;
+  }
+
+  const updateData: Partial<Pick<workComment, 'upvotes' | 'downvotes' | 'isHidden'>> = {
+    upvotes: Math.max(0, finalUpvotes),
+    downvotes: Math.max(0, finalDownvotes),
+  }
+
+  if (updateData.downvotes !== undefined) {
+    if (updateData.downvotes >= 10 && currentComment.isHidden === 0) {
+      updateData.isHidden = 1;
+    } else if (updateData.downvotes < 10 && currentComment.isHidden === 1) {
+      updateData.isHidden = 0;
+    }
+  }
 
   await db
     .update(workComments)
     .set(updateData)
     .where(eq(workComments.id, commentId))
-    .execute()
+    .execute();
 
   return { success: true, message: 'Vote updated successfully' }
 }

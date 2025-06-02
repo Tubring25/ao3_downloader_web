@@ -54,9 +54,14 @@ const createCommentSchema = z.object({
 const voteCommentSchema = z.object({
   workId: z.number(),
   commentId: z.number(),
-  voteType: z.number().refine(val => val === 1 || val === -1, {
-    message: 'voteType must be 1 (upvote) or -1 (downvote)',
+  newVoteType: z.number().refine(val => val === 1 || val === -1 || val === 0, {
+    message: 'newVoteType must be 1 (upvote) or -1 (downvote) or 0 (unvote)',
   }),
+  prevVoteType: z.number()
+    .refine(val => val === 1 || val === -1 || val === 0, {
+      message: 'prevVoteType, if provided, must be 1 (upvote), -1 (downvote), or 0 (unvote)',
+    })
+    .optional(),
 });
 
 

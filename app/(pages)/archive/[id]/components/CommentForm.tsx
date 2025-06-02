@@ -50,12 +50,12 @@ export const CommentForm: React.FC<CommentFormProps> = ({ workId }) => {
   };
 
   return (
-    <div className="mb-8 border border-gray-700 rounded-md p-4 bg-gray-900">
-      <h3 className="text-xl font-semibold mb-4 text-purple-300">Add a Comment</h3>
+    <div className="mb-8 border border-purple-500/30 rounded-lg p-4 bg-gradient-to-br from-purple-900/40 to-pink-900/30 backdrop-blur-sm shadow-lg">
+      <h3 className="text-xl font-semibold mb-4 text-purple-200">Add a Comment</h3>
 
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
-          <label htmlFor="authorName" className="block text-sm font-medium text-gray-300 mb-1">
+          <label htmlFor="authorName" className="block text-sm font-medium text-purple-200 mb-1">
             Your Name
           </label>
           <input
@@ -64,12 +64,12 @@ export const CommentForm: React.FC<CommentFormProps> = ({ workId }) => {
             value={authorName}
             onChange={(e) => setAuthorName(e.target.value)}
             placeholder="Anonymous"
-            className="w-full p-2 bg-gray-800 border border-gray-700 rounded-md text-white"
+            className="w-full p-2 bg-purple-900/50 border border-purple-500/30 rounded-md text-purple-100 placeholder-purple-300/50 focus:border-purple-400 focus:outline-none focus:ring-1 focus:ring-purple-400/50"
           />
         </div>
 
         <div className="mb-4">
-          <label htmlFor="content" className="block text-sm font-medium text-gray-300 mb-1">
+          <label htmlFor="content" className="block text-sm font-medium text-purple-200 mb-1">
             Comment
           </label>
           <textarea
@@ -78,18 +78,18 @@ export const CommentForm: React.FC<CommentFormProps> = ({ workId }) => {
             onChange={(e) => setContent(e.target.value)}
             rows={4}
             placeholder="Write your comment here..."
-            className="w-full p-2 bg-gray-800 border border-gray-700 rounded-md text-white"
+            className="w-full p-2 bg-purple-900/50 border border-purple-500/30 rounded-md text-purple-100 placeholder-purple-300/50 focus:border-purple-400 focus:outline-none focus:ring-1 focus:ring-purple-400/50 resize-vertical"
           />
         </div>
 
         {error && (
-          <div className="mb-4 text-red-400 text-sm">{error}</div>
+          <div className="mb-4 text-red-400 text-sm bg-red-900/20 border border-red-500/30 rounded-md p-2">{error}</div>
         )}
 
         <button
           type="submit"
           disabled={isSubmitting}
-          className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md font-medium disabled:opacity-50"
+          className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-4 py-2 rounded-md font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-purple-500/25"
         >
           {isSubmitting ? 'Posting...' : 'Post Comment'}
         </button>

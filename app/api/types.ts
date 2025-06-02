@@ -56,7 +56,8 @@ export interface ICreateCommentRequest {
 export interface IVoteCommentRequest {
   workId: number;
   commentId: number;
-  voteType: number; // 1 for upvote, -1 for downvote
+  newVoteType: number; // 1 for upvote, -1 for downvote
+  prevVoteType: number | undefined; // 1 for upvote, -1 for downvote
 }
 
 export interface IGetCommentsQuery {
